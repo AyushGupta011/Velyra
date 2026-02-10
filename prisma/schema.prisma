@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String? // Nullable for OAuth users
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  addresses Address[]
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  address   String
+  city      String
+  postalCode String
+  country   String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Decimal
+  stock       Int
+  images      String[]
+  category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  products  Product[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String?     @unique @default(cuid())
+  user            User?       @relation(fields: [userId], references: [id])
+  userId          String?
+  total           Decimal
+  subtotal        Decimal     @default(0)
+  shipping        Decimal     @default(0)
+  tax             Decimal     @default(0)
+  status          OrderStatus @default(PENDING)
+  trackingNumber  String?
+  shippingAddress Json?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  paymentId       String?     // Stripe Payment Intent ID
+  stripeSessionId String?     @unique
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  product   Product? @relation(fields: [productId], references: [id])
+  productId String?
+  name      String  // Store product name for historical reference
+  quantity  Int
+  price     Decimal
+  image     String? // Store product image for historical reference
+}
