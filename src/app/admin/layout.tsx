@@ -17,8 +17,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     useEffect(() => {
         if (status === 'unauthenticated') {
             router.push('/login');
+        } else if (status === 'authenticated' && session?.user?.role !== 'ADMIN') {
+            router.push('/'); // Redirect non-admins to home
         }
-    }, [status, router]);
+    }, [status, session, router]);
 
     // Close mobile menu on route change
     useEffect(() => {
@@ -59,8 +61,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             key={item.href}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg font-bold transition-all border-2 ${isActive
-                                    ? 'bg-primary text-primary-foreground border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                                    : 'hover:bg-primary/10 border-transparent hover:border-black'
+                                ? 'bg-primary text-primary-foreground border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                                : 'hover:bg-primary/10 border-transparent hover:border-black'
                                 }`}
                         >
                             <item.icon className="h-5 w-5" />
