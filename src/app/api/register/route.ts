@@ -4,7 +4,9 @@ import { hash } from 'bcrypt';
 
 export async function POST(req: Request) {
     try {
-        const { email, password, name } = await req.json();
+        const body = await req.json();
+        const { email, password, name } = body;
+        console.log('[REGISTER_POST] Received body:', { email, name, passwordReceived: !!password });
 
         if (!email || !password) {
             return new NextResponse('Missing email or password', { status: 400 });
@@ -38,7 +40,11 @@ export async function POST(req: Request) {
             },
         });
     } catch (error) {
-        console.error('[REGISTER_POST]', error);
+        console.error('[REGISTER_POST_ERROR]', error);
+        if (error instanceof Error) {
+            console.error('[REGISTER_POST_STACK]', error.stack);
+            console.error('[REGISTER_POST_MESSAGE]', error.message);
+        }
         return new NextResponse('Internal Error', { status: 500 });
     }
 }
