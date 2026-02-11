@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   /* Prevents the build from failing on minor Type or Lint errors 
      (Use with caution!) */
   typescript: { ignoreBuildErrors: false },
-  eslint: { ignoreDuringBuilds: false },
+
 
   experimental: {
     // The "Safety First" settings for Vercel's 8GB runner
