@@ -1,36 +1,112 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next.js E-commerce Platform
+
+A modern, full-stack e-commerce application built with Next.js 16, Prisma, Tailwind CSS, and Stripe.
+
+## Features
+
+- **Storefront**: Browse products, view details, calculate prices.
+- **Shopping Cart**: Add items, adjust quantities, real-time totals.
+- **Checkout**: Secure payment processing with Stripe.
+- **User Authentication**: Sign up, login, and manage profile (NextAuth.js).
+- **Admin Dashboard**: Manage products, orders, and users.
+- **Order History**: Users can view their past orders and status.
+- **Responsive Design**: Mobile-friendly UI using Tailwind CSS.
+- **Database**: PostgreSQL with Prisma ORM.
+
+## Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **Language**: TypeScript
+- **Database**: PostgreSQL
+- **ORM**: [Prisma](https://www.prisma.io/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Authentication**: [NextAuth.js](https://next-auth.js.org/)
+- **Payments**: [Stripe](https://stripe.com/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Deployment**: Vercel / Docker
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+ and npm/yarn/pnpm
+- PostgreSQL database
+- Redis (optional, for caching/queues if used)
+- Stripe account
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd nextjs-project
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Set up Environment Variables:**
+   Create a `.env` file in the root directory and add the following:
+
+   ```env
+   # Database
+   DATABASE_URL="postgresql://user:password@localhost:5432/mydb?schema=public"
+   REDIS_URL="redis://localhost:6379"
+
+   # NextAuth
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your-super-secret-key"
+
+   # Stripe
+   STRIPE_SECRET_KEY="sk_test_..."
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
+   STRIPE_WEBHOOK_SECRET="whsec_..."
+
+   # App Config
+   NEXT_PUBLIC_APP_URL="http://localhost:3000"
+   NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+   ```
+
+4. **Initialize the Database:**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
+
+5. **Run the Development Server:**
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Scripts
+
+- `npm run dev`: Runs the development server.
+- `npm run build`: Builds the application for production.
+- `npm run start`: Starts the production server.
+- `npm run lint`: Runs ESLint checks.
+
+## Docker Support
+
+You can also run the application using Docker:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker-compose up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Make sure to configure `docker-compose.yml` and `.env` correctly.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/app`: Next.js App Router pages and API routes.
+- `src/components`: Reusable UI components.
+- `src/lib`: Utility functions, Prisma client, and configurations.
+- `prisma`: Database schema and migrations.
+- `public`: Static assets.
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To learn more about Next.js, take a look at the [Next.js Documentation](https://nextjs.org/docs).

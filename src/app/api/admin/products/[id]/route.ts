@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { checkAdminAuth } from '@/lib/adminAuth';
 
 // PATCH /api/admin/products/[id] - Update product
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const authCheck = await checkAdminAuth();
         if (!authCheck.authorized) {
@@ -13,8 +13,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             );
         }
 
-        const { id } = params;
+        const { id } = await params;
         const body = await req.json();
+
 
         // Whitelist allowed fields to prevent pollution
         const allowedFields = ['name', 'description', 'price', 'stock', 'images', 'categoryId'];
@@ -47,8 +48,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             updateData.categoryId = null;
         }
 
-        console.log(`Updating product ${id} with:`, updateData);
-
         const product = await prisma.product.update({
             where: { id },
             data: updateData,
@@ -71,10 +70,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         // Return explicit Prisma error if possible
         return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
     }
+
 }
 
 // DELETE /api/admin/products/[id] - Delete product
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const authCheck = await checkAdminAuth();
         if (!authCheck.authorized) {
@@ -84,7 +84,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
             );
         }
 
-        const { id } = params;
+        const { id } = await params;
 
         // Check if product is in any orders
         const orderCount = await prisma.orderItem.count({
