@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { checkAdminAuth } from '@/lib/adminAuth';
 
 // GET /api/admin/orders/[id] - Get single order details
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const authCheck = await checkAdminAuth();
         if (!authCheck.authorized) {
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             );
         }
 
-        const { id } = await Promise.resolve(params); // Await params for Next.js 15+ compatibility
+        const { id } = await params; // Await params for Next.js 15+ compatibility
 
         const order = await prisma.order.findUnique({
             where: { id },
