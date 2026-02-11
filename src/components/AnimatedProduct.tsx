@@ -14,7 +14,7 @@ interface ProductShowcaseItem {
 
 const products: ProductShowcaseItem[] = [
     {
-        src: '/images/lavender-candle.jpg',
+        src: 'https://images.unsplash.com/photo-1603905179139-db12ab535ca9?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Y2FuZGxlc3xlbnwwfHwwfHx8MA%3D%3D',
         alt: 'Lavender Soy Candle',
         size: 200,
         initialX: -100,
@@ -22,7 +22,7 @@ const products: ProductShowcaseItem[] = [
         rotation: -15,
     },
     {
-        src: '/images/gift-box.jpg',
+        src: 'https://plus.unsplash.com/premium_photo-1663841374379-5d84dd1f3a2e?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8Z2lmdHN8ZW58MHx8MHx8fDA%3D',
         alt: 'Premium Gift Box',
         size: 180,
         initialX: 100,
@@ -30,7 +30,7 @@ const products: ProductShowcaseItem[] = [
         rotation: 15,
     },
     {
-        src: '/images/vanilla-candle.jpg',
+        src: 'https://images.unsplash.com/photo-1570823635306-250abb06d4b3?w=500&auto=format&fit=crop&q=60',
         alt: 'Vanilla Bean Candle',
         size: 160,
         initialX: 0,

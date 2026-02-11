@@ -253,7 +253,38 @@ export default function AdminDashboard() {
                     </Link>
                 </div>
                 <div className="bg-white rounded-xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                    <div className="overflow-x-auto">
+                    {/* Mobile Card View */}
+                    <div className="md:hidden divide-y-2 divide-gray-100">
+                        {data.recentOrders.map((order, index) => (
+                            <div key={order.id} className="p-4 space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="font-mono font-bold text-primary text-sm">#{order.orderNumber?.slice(0, 8) || order.id.slice(0, 8)}</div>
+                                        <div className="font-bold text-sm mt-1">{order.user?.name || 'Guest'}</div>
+                                    </div>
+                                    <OrderStatusBadge status={order.status} />
+                                </div>
+
+                                <div className="text-sm text-muted-foreground">
+                                    {order.items.slice(0, 2).map((item: any, i: number) => (
+                                        <div key={i}>{item.name} x{item.quantity}</div>
+                                    ))}
+                                    {order.items.length > 2 && <div className="text-xs font-bold">+ {order.items.length - 2} more</div>}
+                                </div>
+
+                                <div className="flex justify-between items-center pt-2">
+                                    <div className="font-black">₹{Number(order.total).toFixed(2)}</div>
+                                    <div className="text-xs text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</div>
+                                </div>
+                                <Button asChild size="sm" className="w-full border-2 border-black mt-2">
+                                    <Link href={`/admin/orders/${order.id}`}>View Details</Link>
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full min-w-[800px]">
                             <thead className="bg-black text-white border-b-4 border-black">
                                 <tr>

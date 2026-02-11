@@ -114,7 +114,57 @@ export default function AdminOrdersPage() {
 
             {/* Orders Table */}
             <div className="bg-white rounded-xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* Mobile Card View */}
+                <div className="md:hidden divide-y-2 divide-gray-100">
+                    {loading ? (
+                        <div className="p-8 text-center">
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                                className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full mb-4"
+                            />
+                            <p className="font-bold">Loading orders...</p>
+                        </div>
+                    ) : orders.length === 0 ? (
+                        <div className="p-8 text-center">
+                            <div className="text-4xl mb-4">🔍</div>
+                            <p className="font-bold text-muted-foreground">No orders found.</p>
+                        </div>
+                    ) : (
+                        orders.map((order, index) => (
+                            <motion.div
+                                key={order.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                className="p-4 space-y-3"
+                            >
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="font-mono font-bold text-primary text-sm">#{order.orderNumber?.slice(0, 8) || order.id.slice(0, 8)}</div>
+                                        <div className="font-bold text-sm mt-1">{order.user?.name || 'Guest'}</div>
+                                    </div>
+                                    <OrderStatusBadge status={order.status} />
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                    <div className="flex justify-between">
+                                        <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                                        <span>{order.items.length} items</span>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center pt-2">
+                                    <div className="font-black text-lg">₹{Number(order.total).toFixed(2)}</div>
+                                    <Button asChild size="sm" className="border-2 border-black">
+                                        <Link href={`/admin/orders/${order.id}`}>Details</Link>
+                                    </Button>
+                                </div>
+                            </motion.div>
+                        ))
+                    )}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full min-w-[800px]">
                         <thead className="bg-secondary/10 border-b-4 border-black">
                             <tr>
