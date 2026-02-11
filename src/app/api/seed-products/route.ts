@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Create products
-        const results = [];
+        const results: any[] = [];
         for (const p of INITIAL_PRODUCTS) {
             // Find category
             const category = await prisma.category.findUnique({

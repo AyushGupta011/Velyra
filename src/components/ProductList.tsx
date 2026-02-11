@@ -6,7 +6,7 @@ interface ProductListProps {
 }
 
 export default async function ProductList({ category }: ProductListProps) {
-    let products = [];
+    let products: any[] = [];
 
     try {
         const whereFn = category ? { category: { name: category } } : {};

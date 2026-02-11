@@ -54,6 +54,8 @@ export async function POST(req: Request) {
                 items: {
                     create: products.map((product) => ({
                         product: { connect: { id: product.id } },
+                        name: product.name,
+                        image: product.images[0] || null,
                         quantity: 1,
                         price: product.price
                     }))

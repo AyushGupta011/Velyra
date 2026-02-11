@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { CheckCircle, Package, ArrowRight } from 'lucide-react';
@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { useCartStore } from '@/store/cartStore';
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
     const searchParams = useSearchParams();
     const sessionId = searchParams.get('session_id');
     const clearCart = useCartStore((state) => state.clearCart);
@@ -149,5 +149,17 @@ export default function OrderSuccessPage() {
                 </motion.div>
             </motion.div>
         </div>
+    );
+}
+
+export default function OrderSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div className="container mx-auto px-4 py-16 text-center">
+                <div className="animate-pulse">Loading order details...</div>
+            </div>
+        }>
+            <OrderSuccessContent />
+        </Suspense>
     );
 }

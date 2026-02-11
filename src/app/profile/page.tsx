@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Package, MapPin, Plus, Trash2 } from 'lucide-react';
+import { Package, MapPin, Plus, Trash2, User, Edit2, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -33,12 +33,21 @@ interface Address {
     isDefault: boolean;
 }
 
+interface UserProfile {
+    name: string;
+    email: string;
+    role: string;
+}
+
 export default function ProfilePage() {
     const { data: session, status } = useSession();
     const router = useRouter();
+    const [user, setUser] = useState<UserProfile | null>(null);
     const [orders, setOrders] = useState<Order[]>([]);
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Address form state
     const [showAddressForm, setShowAddressForm] = useState(false);
     const [newAddress, setNewAddress] = useState({
         name: '',
@@ -48,6 +57,10 @@ export default function ProfilePage() {
         postalCode: '',
         country: 'India',
     });
+
+    // Profile edit state
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [editedName, setEditedName] = useState('');
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -59,11 +72,17 @@ export default function ProfilePage() {
 
     const fetchData = async () => {
         try {
-            const [ordersRes, addressesRes] = await Promise.all([
+            const [userRes, ordersRes, addressesRes] = await Promise.all([
+                fetch('/api/user'),
                 fetch('/api/user/orders'),
                 fetch('/api/user/addresses')
             ]);
 
+            if (userRes.ok) {
+                const userData = await userRes.json();
+                setUser(userData);
+                setEditedName(userData.name || '');
+            }
             if (ordersRes.ok) {
                 const ordersData = await ordersRes.json();
                 setOrders(ordersData);
@@ -76,6 +95,24 @@ export default function ProfilePage() {
             console.error('Failed to fetch data:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleUpdateProfile = async () => {
+        try {
+            const res = await fetch('/api/user', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: editedName }),
+            });
+
+            if (res.ok) {
+                const updatedUser = await res.json();
+                setUser(prev => prev ? { ...prev, name: updatedUser.name } : null);
+                setIsEditingProfile(false);
+            }
+        } catch (error) {
+            console.error('Failed to update profile:', error);
         }
     };
 
@@ -127,54 +164,97 @@ export default function ProfilePage() {
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-4xl font-black mb-2">My Profile</h1>
-            <p className="text-muted-foreground mb-8">Manage your orders and addresses</p>
+            <p className="text-muted-foreground mb-8">Manage your personal details, orders, and addresses</p>
 
             <div className="grid md:grid-cols-2 gap-8">
-                {/* Orders Section */}
-                <div className="space-y-6">
-                    <h2 className="text-2xl font-bold flex items-center gap-2">
-                        <Package className="h-6 w-6" /> Order History
-                    </h2>
-                    {orders.length === 0 ? (
-                        <Card className="border-2 border-dashed border-muted">
-                            <CardContent className="p-8 text-center text-muted-foreground">
-                                No orders yet
+                <div className="space-y-8">
+                    {/* Personal Information Section */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-bold flex items-center gap-2">
+                                <User className="h-6 w-6" /> Personal Information
+                            </h2>
+                            {!isEditingProfile ? (
+                                <Button onClick={() => setIsEditingProfile(true)} size="sm" variant="ghost" className="text-muted-foreground hover:text-foreground">
+                                    <Edit2 className="h-4 w-4 mr-2" /> Edit
+                                </Button>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <Button onClick={() => setIsEditingProfile(false)} size="sm" variant="ghost">Cancel</Button>
+                                    <Button onClick={handleUpdateProfile} size="sm" className="bg-primary text-primary-foreground">Save</Button>
+                                </div>
+                            )}
+                        </div>
+
+                        <Card className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <CardContent className="p-6 space-y-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="profile-name">Full Name</Label>
+                                    {isEditingProfile ? (
+                                        <Input
+                                            id="profile-name"
+                                            value={editedName}
+                                            onChange={(e) => setEditedName(e.target.value)}
+                                            className="border-2 border-black"
+                                        />
+                                    ) : (
+                                        <div className="text-lg font-medium">{user?.name || 'Not set'}</div>
+                                    )}
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label>Email Address</Label>
+                                    <div className="text-lg font-medium text-muted-foreground">{user?.email}</div>
+                                </div>
                             </CardContent>
                         </Card>
-                    ) : (
-                        <div className="space-y-4">
-                            {orders.map((order) => (
-                                <Card key={order.id} className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all">
-                                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                        <div className="space-y-1">
-                                            <CardTitle className="text-lg">Order #{order.id.slice(-6)}</CardTitle>
-                                            <p className="text-sm text-muted-foreground">
-                                                {new Date(order.createdAt).toLocaleDateString()}
+                    </div>
+
+                    {/* Orders Section */}
+                    <div className="space-y-6">
+                        <h2 className="text-2xl font-bold flex items-center gap-2">
+                            <Package className="h-6 w-6" /> Order History
+                        </h2>
+                        {orders.length === 0 ? (
+                            <Card className="border-2 border-dashed border-muted">
+                                <CardContent className="p-8 text-center text-muted-foreground">
+                                    No orders yet
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <div className="space-y-4">
+                                {orders.map((order) => (
+                                    <Card key={order.id} className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all">
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                            <div className="space-y-1">
+                                                <CardTitle className="text-lg">Order #{order.id.slice(-6)}</CardTitle>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {new Date(order.createdAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-black text-lg">₹{Number(order.total).toFixed(2)}</p>
+                                                <span className={`text-xs px-2 py-1 rounded-full text-white font-bold ${order.status === 'DELIVERED' ? 'bg-green-500' :
+                                                    order.status === 'SHIPPED' ? 'bg-blue-500' :
+                                                        order.status === 'PROCESSING' ? 'bg-yellow-500' :
+                                                            'bg-gray-500'
+                                                    }`}>
+                                                    {order.status}
+                                                </span>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-sm text-muted-foreground mb-4">
+                                                {order.items.length} items: {order.items.map(i => i.name).join(', ')}
                                             </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-black text-lg">₹{Number(order.total).toFixed(2)}</p>
-                                            <span className={`text-xs px-2 py-1 rounded-full text-white font-bold ${order.status === 'DELIVERED' ? 'bg-green-500' :
-                                                order.status === 'SHIPPED' ? 'bg-blue-500' :
-                                                    order.status === 'PROCESSING' ? 'bg-yellow-500' :
-                                                        'bg-gray-500'
-                                                }`}>
-                                                {order.status}
-                                            </span>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-muted-foreground mb-4">
-                                            {order.items.length} items: {order.items.map(i => i.name).join(', ')}
-                                        </p>
-                                        <Button asChild variant="outline" size="sm" className="w-full border-2 border-black hover:bg-accent font-bold">
-                                            <Link href={`/orders/${order.id}`}>View Details</Link>
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
+                                            <Button asChild variant="outline" size="sm" className="w-full border-2 border-black hover:bg-accent font-bold">
+                                                <Link href={`/orders/${order.id}`}>View Details</Link>
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Addresses Section */}

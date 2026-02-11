@@ -28,7 +28,7 @@ export default function StatsCard({ title, value, subtitle, icon: Icon, trend, c
             className="bg-white p-6 rounded-xl border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group"
             whileHover={{
                 y: -4,
-                shadow: '8px_8px_0px_0px_rgba(0,0,0,1)',
+                boxShadow: '8px_8px_0px_0px_rgba(0,0,0,1)',
             }}
             transition={{ type: "spring", stiffness: 300 }}
         >
