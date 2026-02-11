@@ -3,9 +3,9 @@ import ProductDetailClient from './ProductDetailClient';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
     // Await params for Next.js 15+ compatibility
-    const { id } = await Promise.resolve(params);
+    const { id } = await params;
 
     const product = await prisma.product.findUnique({
         where: { id },

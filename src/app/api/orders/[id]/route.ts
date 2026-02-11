@@ -4,11 +4,12 @@ import { prisma } from '@/lib/prisma';
 // GET /api/orders/[id] - Get a single order by ID
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const order = await prisma.order.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: {
                 items: true,
                 user: {
@@ -41,13 +42,14 @@ export async function GET(
 // PATCH /api/orders/[id] - Update order status
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const { status, trackingNumber } = await req.json();
 
         const order = await prisma.order.update({
-            where: { id: params.id },
+            where: { id },
             data: {
                 ...(status && { status }),
                 ...(trackingNumber && { trackingNumber }),
