@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
+import { sendOrderConfirmation } from "@/lib/email";
 
 export async function POST(req: Request) {
     const body = await req.text();
@@ -115,10 +116,31 @@ export async function POST(req: Request) {
             console.log('Total:', order.total);
             console.log('Items:', order.items.length);
 
-            // TODO: Send confirmation email
-            // TODO: Update product stock
-
-        } catch (error: any) {
+            // Send confirmation email
+            if (shippingAddress.email) {
+                await sendOrderConfirmation(
+                    shippingAddress.email,
+                    order.orderNumber || order.id,
+                    order.items,
+                    Number(order.total)
+                );
+            // Update product stock
+            for (const item of order.items) {
+                if (item.productId) {
+                    try {
+                        await prisma.product.update({
+                            where: { id: item.productId },
+                            data: {
+                                stock: {
+                                    decrement: item.quantity
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        console.error(`Failed to update stock for product ${item.productId}`, e);
+                    }
+                }
+            }
             console.error('Error creating order:', error);
             return new NextResponse(`Order Creation Error: ${error.message}`, { status: 500 });
         }

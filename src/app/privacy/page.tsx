@@ -2,11 +2,12 @@ import React from 'react';
 
 export default function PrivacyPage() {
     return (
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-            <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
-
-            <div className="space-y-6 text-gray-700">
-                <section>
+        <div className="container mx-auto px-4 py-16 max-w-4xl">
+            <div className="bg-white border-4 border-black p-8 md:p-12 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-lg">
+                <h1 className="text-4xl md:text-5xl font-black mb-8 uppercase tracking-tight">Privacy Policy</h1>
+                
+                <div className="space-y-8 text-gray-800 leading-relaxed text-lg">
+                    <section>
                     <h2 className="text-xl font-semibold mb-3 text-gray-900">1. Introduction</h2>
                     <p>
                         Welcome to Velyra. We respect your privacy and are committed to protecting your personal data.
@@ -48,9 +49,10 @@ export default function PrivacyPage() {
                     </p>
                 </section>
 
-                <p className="text-sm text-gray-500 mt-8">
-                    Last updated: {new Date().toLocaleDateString()}
-                </p>
+                    <p className="text-sm font-bold text-gray-500 mt-12 pt-4 border-t-2 border-black/20">
+                        Last updated: {new Date().toLocaleDateString()}
+                    </p>
+                </div>
             </div>
         </div>
     );

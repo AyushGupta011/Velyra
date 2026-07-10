@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CreditCard } from 'lucide-react';
+import { ArrowLeft, CreditCard, MessageCircle } from 'lucide-react';
 import { getSession } from 'next-auth/react';
 
 export default function CheckoutPage() {
@@ -136,6 +136,73 @@ export default function CheckoutPage() {
             console.error('Checkout error:', error);
             const errorMessage = error.message || 'Something went wrong. Please try again.';
             alert(`Checkout failed: ${errorMessage}\n\nPlease check the console for more details.`);
+            setIsProcessing(false);
+        }
+    };
+
+    const handleWhatsAppCheckout = async () => {
+        if (!formData.name || !formData.email || !formData.address) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        setIsProcessing(true);
+
+        try {
+            // Save order to database
+            const response = await fetch('/api/checkout/whatsapp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items,
+                    shippingAddress: formData,
+                    total: grandTotal,
+                    subtotal: total,
+                    shipping,
+                    tax
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to create order');
+            }
+
+            // Format WhatsApp message
+            let message = `*New Order Request*\n\n`;
+            message += `*Customer Details:*\n`;
+            message += `Name: ${formData.name}\n`;
+            message += `Email: ${formData.email}\n`;
+            message += `Address: ${formData.address}, ${formData.city}, ${formData.postalCode}, ${formData.country}\n\n`;
+            
+            message += `*Order Items:*\n`;
+            items.forEach(item => {
+                message += `- ${item.name} (Qty: ${item.quantity}) - ₹${(item.price * item.quantity).toFixed(2)}\n`;
+            });
+
+            message += `\n*Order Summary:*\n`;
+            message += `Subtotal: ₹${total.toFixed(2)}\n`;
+            message += `Shipping: ₹${shipping.toFixed(2)}\n`;
+            message += `Tax (18% GST): ₹${tax.toFixed(2)}\n`;
+            message += `*Grand Total: ₹${grandTotal.toFixed(2)}*\n\n`;
+            message += `Order Reference ID: ${data.orderId}\n`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const phoneNumber = '919336837889'; // As requested
+            
+            // Clear cart
+            clearCart();
+
+            // Open WhatsApp in new tab
+            window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+            
+            // Redirect user to an order success page locally
+            window.location.href = `/order-success?orderId=${data.orderId}&type=whatsapp`;
+            
+        } catch (error: any) {
+            console.error('WhatsApp checkout error:', error);
+            alert(`Checkout failed: ${error.message}`);
             setIsProcessing(false);
         }
     };
@@ -341,23 +408,50 @@ export default function CheckoutPage() {
                                 </div>
                             </div>
 
-                            <Button
-                                onClick={handleCheckout}
-                                disabled={isProcessing}
-                                className="w-full text-lg py-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all"
-                            >
-                                {isProcessing ? (
-                                    'Processing...'
-                                ) : (
-                                    <>
-                                        <CreditCard className="mr-2 h-5 w-5" />
-                                        Proceed to Payment
-                                    </>
-                                )}
-                            </Button>
+                            <div className="flex flex-col gap-3">
+                                <Button
+                                    onClick={handleWhatsAppCheckout}
+                                    disabled={isProcessing}
+                                    className="w-full text-lg py-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all bg-[#25D366] hover:bg-[#128C7E] text-white"
+                                >
+                                    {isProcessing ? (
+                                        'Processing...'
+                                    ) : (
+                                        <>
+                                            <MessageCircle className="mr-2 h-5 w-5" />
+                                            Order via WhatsApp
+                                        </>
+                                    )}
+                                </Button>
+
+                                <div className="relative my-2">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <span className="w-full border-t border-muted"></span>
+                                    </div>
+                                    <div className="relative flex justify-center text-xs uppercase">
+                                        <span className="bg-background px-2 text-muted-foreground">Or</span>
+                                    </div>
+                                </div>
+
+                                <Button
+                                    onClick={handleCheckout}
+                                    disabled={isProcessing}
+                                    variant="outline"
+                                    className="w-full text-lg py-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all"
+                                >
+                                    {isProcessing ? (
+                                        'Processing...'
+                                    ) : (
+                                        <>
+                                            <CreditCard className="mr-2 h-5 w-5" />
+                                            Pay with Card
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
 
                             <p className="text-xs text-center text-muted-foreground">
-                                Secure payment powered by Stripe
+                                Secure payments powered by Stripe & WhatsApp
                             </p>
                         </CardContent>
                     </Card>

@@ -21,7 +21,7 @@ const IMAGE_MAP: Record<string, string[]> = {
 };
 
 async function main() {
-    console.log('🔄 Starting image update...');
+
 
     const products = await prisma.product.findMany({
         include: { category: true }
@@ -45,12 +45,10 @@ async function main() {
                 }
             });
 
-            console.log(`✅ Updated "${product.name}" with image: ${randomImage}`);
+
             updatedCount++;
         }
     }
-
-    console.log(`🎉 Finished! Updated ${updatedCount} products.`);
 }
 
 main()

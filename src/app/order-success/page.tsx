@@ -12,8 +12,11 @@ import { useCartStore } from '@/store/cartStore';
 function OrderSuccessContent() {
     const searchParams = useSearchParams();
     const sessionId = searchParams.get('session_id');
+    const orderIdParam = searchParams.get('orderId');
+    const isWhatsApp = searchParams.get('type') === 'whatsapp';
+    
     const clearCart = useCartStore((state) => state.clearCart);
-    const [orderNumber, setOrderNumber] = useState<string>('');
+    const [orderNumber, setOrderNumber] = useState<string>(orderIdParam || '');
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -65,8 +68,12 @@ function OrderSuccessContent() {
                     transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
                     className="inline-block mb-6"
                 >
-                    <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-                        <CheckCircle className="h-16 w-16 text-white" />
+                    <div className={`w-24 h-24 rounded-full flex items-center justify-center border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${isWhatsApp ? 'bg-yellow-400' : 'bg-green-500'}`}>
+                        {isWhatsApp ? (
+                            <Package className="h-16 w-16 text-black" />
+                        ) : (
+                            <CheckCircle className="h-16 w-16 text-white" />
+                        )}
                     </div>
                 </motion.div>
 
@@ -76,7 +83,7 @@ function OrderSuccessContent() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                 >
-                    Order Confirmed!
+                    {isWhatsApp ? 'Order Requested! 📱' : 'Order Confirmed!'}
                 </motion.h1>
 
                 <motion.p
@@ -85,7 +92,9 @@ function OrderSuccessContent() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
                 >
-                    Thank you for your purchase. Your order has been successfully placed.
+                    {isWhatsApp 
+                        ? 'Your order has been recorded. Please complete the payment on WhatsApp to finalize your purchase.'
+                        : 'Thank you for your purchase. Your order has been successfully placed.'}
                 </motion.p>
 
                 <motion.div
@@ -112,7 +121,11 @@ function OrderSuccessContent() {
                                 )}
                                 <div className="flex justify-between py-2">
                                     <span className="font-bold">Status:</span>
-                                    <span className="text-green-600 font-bold">Confirmed</span>
+                                    {isWhatsApp ? (
+                                        <span className="text-yellow-600 font-bold">Pending Payment</span>
+                                    ) : (
+                                        <span className="text-green-600 font-bold">Confirmed</span>
+                                    )}
                                 </div>
                             </div>
                         </CardContent>
@@ -127,7 +140,9 @@ function OrderSuccessContent() {
                 >
                     <h3 className="font-black text-lg mb-2">What's Next?</h3>
                     <p className="text-sm text-muted-foreground">
-                        We'll send you an email confirmation shortly. Your order will be processed and shipped within 5-7 business days.
+                        {isWhatsApp 
+                            ? "We have redirected you to WhatsApp. Please send the pre-filled message and follow the instructions to pay and confirm your order." 
+                            : "We'll send you an email confirmation shortly. Your order will be processed and shipped within 5-7 business days."}
                     </p>
                 </motion.div>
 

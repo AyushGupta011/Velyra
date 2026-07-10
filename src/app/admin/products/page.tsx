@@ -12,10 +12,10 @@ import { Pencil, Trash2, Plus, Image as ImageIcon, Loader2 } from 'lucide-react'
 export default function AdminProductsPage() {
     const [products, setProducts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
     const [isOpen, setIsOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -135,6 +135,35 @@ export default function AdminProductsPage() {
             images: '',
             categoryId: '',
         });
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            setFormData(prev => ({
+                ...prev,
+                images: prev.images ? `${prev.images}, ${data.url}` : data.url
+            }));
+        } catch (error: any) {
+            console.error(error);
+            alert(`Upload failed: ${error.message}`);
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     return (
@@ -297,13 +326,33 @@ export default function AdminProductsPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-bold">Images (comma separated URLs)</label>
+                            <label className="text-sm font-bold">Images</label>
+                            <div className="flex gap-2">
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    disabled={isUploading}
+                                    className="border-2 border-black w-auto"
+                                />
+                                {isUploading && <span className="text-sm text-muted-foreground flex items-center"><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</span>}
+                            </div>
                             <Textarea
-                                placeholder="https://..., https://..."
+                                placeholder="Uploaded image URLs will appear here..."
                                 value={formData.images}
                                 onChange={e => setFormData({ ...formData, images: e.target.value })}
-                                className="border-2 border-black resize-none"
+                                className="border-2 border-black resize-none mt-2 text-xs"
+                                rows={2}
                             />
+                            {formData.images && (
+                                <div className="flex gap-2 overflow-x-auto py-2">
+                                    {formData.images.split(',').filter(Boolean).map((url, i) => (
+                                        <div key={i} className="h-16 w-16 border-2 border-black rounded-md overflow-hidden flex-shrink-0">
+                                            <img src={url.trim()} alt="" className="h-full w-full object-cover" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                     <DialogFooter>

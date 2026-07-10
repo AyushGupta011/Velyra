@@ -95,6 +95,15 @@ export async function PATCH(req: NextRequest) {
             updateData.trackingNumber = trackingNumber;
         }
 
+        const existingOrder = await prisma.order.findUnique({
+            where: { id: orderId },
+            include: { items: true }
+        });
+
+        if (!existingOrder) {
+            return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+        }
+
         const order = await prisma.order.update({
             where: { id: orderId },
             data: updateData,
@@ -109,6 +118,26 @@ export async function PATCH(req: NextRequest) {
                 },
             },
         });
+
+        // Deduct stock if a WhatsApp order is marked as PAID or PROCESSING from PENDING
+        if (
+            existingOrder.paymentId === 'WHATSAPP_PENDING' && 
+            existingOrder.status === 'PENDING' && 
+            (status === 'PAID' || status === 'PROCESSING')
+        ) {
+            for (const item of existingOrder.items) {
+                if (item.productId) {
+                    try {
+                        await prisma.product.update({
+                            where: { id: item.productId },
+                            data: { stock: { decrement: item.quantity } }
+                        });
+                    } catch (e) {
+                        console.error(`Failed to deduct stock for product ${item.productId}`, e);
+                    }
+                }
+            }
+        }
 
         console.log(`✅ Order ${orderId} status updated to ${status}`);
 

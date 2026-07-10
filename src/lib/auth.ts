@@ -1,5 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 import { prisma } from '@/lib/prisma';
 import { compare } from 'bcrypt';
 import { PrismaAdapter } from '@auth/prisma-adapter';
@@ -46,6 +47,19 @@ export const authOptions: NextAuthOptions = {
                     role: user.role,
                 };
             }
+        }),
+        GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID || '',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+            profile(profile) {
+                return {
+                    id: profile.sub,
+                    name: profile.name,
+                    email: profile.email,
+                    image: profile.picture,
+                    role: 'CUSTOMER', // Default role for Google signups
+                };
+            },
         })
     ],
     callbacks: {
