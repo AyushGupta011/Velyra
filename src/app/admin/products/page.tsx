@@ -12,6 +12,7 @@ import { Pencil, Trash2, Plus, Image as ImageIcon, Loader2 } from 'lucide-react'
 export default function AdminProductsPage() {
     const [products, setProducts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const [isOpen, setIsOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any>(null);
     const [isSaving, setIsSaving] = useState(false);
