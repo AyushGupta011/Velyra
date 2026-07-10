@@ -124,6 +124,8 @@ export async function POST(req: Request) {
                     order.items,
                     Number(order.total)
                 );
+            }
+
             // Update product stock
             for (const item of order.items) {
                 if (item.productId) {
@@ -141,6 +143,7 @@ export async function POST(req: Request) {
                     }
                 }
             }
+        } catch (error: any) {
             console.error('Error creating order:', error);
             return new NextResponse(`Order Creation Error: ${error.message}`, { status: 500 });
         }
